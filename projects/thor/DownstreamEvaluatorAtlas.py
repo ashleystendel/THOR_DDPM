@@ -54,7 +54,7 @@ class PDownstreamEvaluator(DownstreamEvaluator):
         self.vgg_encoder = VGGEncoder().to(self.device)
         self.l_pips_sq = lpips.LPIPS(pretrained=True, net='squeeze', use_dropout=True, eval_mode=True, spatial=True,
                                      lpips=True).to(self.device)
-        self.l_cos = CosineSimLoss(device='cuda')
+        self.l_cos = CosineSimLoss(device=self.device)
         self.l_ncc = NCC(win=[9, 9])
 
         # 71 - 570 - inf
@@ -381,6 +381,9 @@ class PDownstreamEvaluator(DownstreamEvaluator):
         for dataset_key in self.test_data_dict.keys():
             # Get some stats on prediction set
             pred_ood, label_ood = pred_dict[dataset_key]
+            if len(pred_ood) == 0:
+                logging.info(f'No samples in threshold range {threshold_low}-{threshold_high} for {dataset_key}, skipping.')
+                continue
             predictions = np.asarray(pred_ood)
             labels = np.asarray(label_ood)
             predictions_all = np.reshape(np.asarray(predictions), (len(predictions), -1))  # .flatten()
