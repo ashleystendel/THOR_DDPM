@@ -460,8 +460,8 @@ class DDPM(nn.Module):
             if t in t_harmonization:
 
                 image_0 = res * orig_image + (1-res) * inputs   # orig_image, inputs
-
-                image_0 = torch.clamp(image_0, 0, 1)
+                # TODO: the original line was and may be a bug:  image_0 = torch.clamp(image_0, 0, 1)
+                image_0 = torch.clamp(image_0, -1, 1)
                 image = self.train_scheduler.add_noise(original_samples=image_0, noise=noise, timesteps=t)
 
         self.img_ct += 1 

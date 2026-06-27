@@ -1,4 +1,4 @@
-name: THOR [Gaussian] AD 350
+name: THOR [Simplex] 250
 target_size: &target_size !!python/tuple [128, 128]
 train_batch_size: &tbatch_size 16
 downstream_batch_size: &dbatch_size 1
@@ -7,7 +7,7 @@ checkpoint_path: &checkpoint_path './weights/thor/thor/'
 # Experiment
 #
 # TODO: change task: to train or test
-# TODO: change weights to Simplex or Guassian
+# TODO: change weights to Simplex or Gaussian
 experiment:
   name: THOR
   task: test
@@ -44,13 +44,14 @@ model:
     train_scheduler: "ddpm"
     inference_scheduler: "ddpm"
     inference_steps: 1000
-    noise_level_recon: 350 # 400
+    noise_level_recon: 250 # 400
     noise_type: "simplex" # TODO: Change to 'simplex' for Simplex noise
-    prediction_type: "epsilon"
+    prediction_type: "sample"
     inference_type: 'thor'
     t_harmonization: 
-      - 300
+      - 200
       - 150
+      - 100
       - 50
 
 #

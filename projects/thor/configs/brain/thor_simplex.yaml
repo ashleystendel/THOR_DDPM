@@ -44,7 +44,7 @@ model:
     inference_steps: 1000
     noise_level_recon: 250 # 400
     noise_type: "simplex" # Change to 'simplex' for Simplex noise
-    prediction_type: "epsilon"
+    prediction_type: "sample"
     inference_type: 'thor'
     t_harmonization: 
       - 200
