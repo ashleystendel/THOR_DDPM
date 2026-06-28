@@ -54,7 +54,7 @@ class PDownstreamEvaluator(DownstreamEvaluator):
         self.vgg_encoder = VGGEncoder().to(self.device)
         self.l_pips_sq = lpips.LPIPS(pretrained=True, net='squeeze', use_dropout=True, eval_mode=True, spatial=True,
                                      lpips=True).to(self.device)
-        self.l_cos = CosineSimLoss(device='cuda')
+        self.l_cos = CosineSimLoss(device=self.device)
         self.l_ncc = NCC(win=[9, 9])
 
         # 71 - 570 - inf
@@ -103,7 +103,12 @@ class PDownstreamEvaluator(DownstreamEvaluator):
             axarr[idx].imshow(tensor, cmap=dict.get('cmap', 'gray'), vmin=dict.get('vmin', 0), vmax=dict.get('vmax', 1))
         diffp.set_size_inches(len(to_visualize) * 4, 4)
 
-        wandb.log({f'Anomaly_masks/Example_Atlas_{count}': [wandb.Image(diffp, caption="Atlas_" + str(count))]})
+        out_dir = os.path.join(wandb.run.dir, 'images')
+        os.makedirs(out_dir, exist_ok=True)
+        out_path = os.path.join(out_dir, f'Atlas_{count}.png')
+        diffp.savefig(out_path, bbox_inches='tight')
+        wandb.log({f'Anomaly_masks/Example_Atlas_{count}': [wandb.Image(out_path, caption="Atlas_" + str(count))]})
+        plt.close(diffp)
 
 
     def find_mask_size_thresholds(self, dataset):
@@ -292,8 +297,8 @@ class PDownstreamEvaluator(DownstreamEvaluator):
 
             for idx, data in enumerate(dataset):
 
-                if idx not in [3,8,15,17,18,22,81,101,381,440,530,597,598,602,636, 66, 550, 616, 548, 545, 325]:
-                    continue
+                # if idx not in [3,8,15,17,18,22,81,101,381,440,530,597,598,602,636, 66, 550, 616, 548, 545, 325]:
+                #     continue
 
                 # Call this to get the mask size thresholds for the dataset
                 # self.find_mask_size_thresholds(dataset)
@@ -341,9 +346,7 @@ class PDownstreamEvaluator(DownstreamEvaluator):
                             continue
 
                         # Example visualizations
-                        if int(count) % 1000 == 0 or int(count) in [3,8,15,17,18,22,81,101,381,440,530,597,598,602,636, 66, 550, 616, 548, 545, 325]: #[0, 66, 325, 352, 545, 548, 231, 609, 616, 11, 254,
-                                                                #   539, 165, 545, 550, 92, 616, 628, 630, 636, 651]:
-                            self._log_visualization(to_visualize, i, count)
+                        self._log_visualization(to_visualize, i, count)
 
                         x_i = x[i][0]
                         rec_2_i = x_rec[i][0]
@@ -381,6 +384,9 @@ class PDownstreamEvaluator(DownstreamEvaluator):
         for dataset_key in self.test_data_dict.keys():
             # Get some stats on prediction set
             pred_ood, label_ood = pred_dict[dataset_key]
+            if len(pred_ood) == 0:
+                logging.info(f'No samples in threshold range {threshold_low}-{threshold_high} for {dataset_key}, skipping.')
+                continue
             predictions = np.asarray(pred_ood)
             labels = np.asarray(label_ood)
             predictions_all = np.reshape(np.asarray(predictions), (len(predictions), -1))  # .flatten()

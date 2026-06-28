@@ -94,7 +94,8 @@ if __name__ == "__main__":
         stream_file = open(args.config_path, 'r')
         config_file = yaml.load(stream_file, Loader=yaml.FullLoader)
         logging.info('[IML-COMPAI-DL::main] Success: Loaded configuration file at: {}'.format(args.config_path))
-    except:
+    except Exception as e:
+        logging.error(e)
         logging.error('[IML-COMPAI-DL::main] ERROR: Invalid configuration file at: {}, exiting...'.format(args.config_path))
         exit()
     Main(config_file).setup_experiment()
